@@ -15,14 +15,18 @@ endif(OPENMP_FOUND)
 find_package(OpenCV REQUIRED)
 find_package(serial REQUIRED)
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
 add_subdirectory(./dsst)
 
 include_directories(
-    ${PROJECT_BINARY_DIR}/install/include
+    ${PROJECT_BINARY_DIR}/include
     ${serial_INCLUDE_DIRS}
 )
 link_directories(
-    ${PROJECT_BINARY_DIR}/install/lib
+    ${PROJECT_BINARY_DIR}/lib
     /usr/lib
 )
 

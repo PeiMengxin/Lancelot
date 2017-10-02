@@ -19,8 +19,10 @@ list(APPEND SOURCE_FILES ${PROJECT_SOURCE_DIR}/CorrelationTracker/dsst_tracker/d
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${dlib_LIBRARIES})
 
+file(GLOB ct_headers ${CMAKE_CURRENT_SOURCE_DIR}/CorrelationTracker/*.h)
+file(COPY ${ct_headers} DESTINATION "${CMAKE_BINARY_DIR}/include/CorrelationTracker")
+
 # install target
-set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/install)
 
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin

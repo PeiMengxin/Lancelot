@@ -9,7 +9,7 @@
 #define TRACE_H_
 
 #include "CharacterRecognition.h"
-#include <opencv2/opencv.hpp>
+#include "lancelot_functions.h"
 #include <iostream>
 #include <fstream>
 #include <ctype.h>
