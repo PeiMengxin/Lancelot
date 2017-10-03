@@ -21,15 +21,10 @@ bool is_print_character;
 int get_serial_config(std::string &serial_port_name, int &serial_baudrate)
 {
 	inifile::IniFile m_inifile;
-	cout << expand_user("~") << endl;
-	cout << m_inifile.load(expand_user("~") + "/Lancelot/config/config.ini");
 	int ret = 0;
 	serial_port_name = m_inifile.getStringValue("Serial", "serial_port", ret);
-	cout << ret << endl;
 	serial_baudrate = m_inifile.getIntValue("Serial", "serial_baudrate", ret);
-	cout << ret << endl;
-	cout << serial_port_name << endl;
-	cout << serial_baudrate << endl;
+
 	return ret;
 }
 
