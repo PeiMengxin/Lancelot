@@ -73,7 +73,7 @@ void drawImage(cv::Mat &image)
 void startWriteVideo(cv::VideoWriter &video_writer)
 {
 	string user_path = expand_user("~");
-	string video_num_path(user_path + "/workspace/characterRecognition/video/video_num.txt");
+	string video_num_path(user_path + "/Lancelot/video/video_num.txt");
 
 	int video_num = 0;
 	std::ifstream video_num_read;
@@ -100,6 +100,6 @@ void startWriteVideo(cv::VideoWriter &video_writer)
 	ss >> video_name;
 	video_name += ".avi";
 
-	video_writer.open(user_path + "/workspace/characterRecognition/video/" + video_name,
+	video_writer.open(user_path + "/Lancelot/video/" + video_name,
 					  CV_FOURCC('D', 'I', 'V', 'X'), 15, Size(320, 240));
 }

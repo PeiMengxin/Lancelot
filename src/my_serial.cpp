@@ -21,6 +21,7 @@ bool is_print_character;
 int get_serial_config(std::string &serial_port_name, int &serial_baudrate)
 {
 	inifile::IniFile m_inifile;
+	m_inifile.load(expand_user("~") + "/Lancelot/config/config.ini");
 	int ret = 0;
 	serial_port_name = m_inifile.getStringValue("Serial", "serial_port", ret);
 	serial_baudrate = m_inifile.getIntValue("Serial", "serial_baudrate", ret);
@@ -33,6 +34,10 @@ void uartReadThread()
 	std::string serial_port_name;
 	int serial_baudrate = 0;
 	get_serial_config(serial_port_name, serial_baudrate);
+
+	cout << "serial_port_name:" << serial_port_name << endl;
+	cout << "serial_baudrate:" << serial_baudrate << endl;
+
 	my_serial.setPort(serial_port_name);
 	my_serial.setBaudrate(serial_baudrate);
 	serial::Timeout timeout(serial::Timeout::simpleTimeout(1000));
