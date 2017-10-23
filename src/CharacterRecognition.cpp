@@ -708,11 +708,11 @@ NumberPosition::~NumberPosition()
 NumberPosition::NumberPosition()
 {
 	this->number_ = 'N';
-	this->position_ = cv::Point(-100, -100);
+	this->position_ = cv::Point(0, 0);
 }
 
 void NumberPosition::init()
 {
 	this->number_ = 'N';
-	this->position_ = cv::Point(-100, -100);
+	this->position_ = cv::Point(0, 0);
 }

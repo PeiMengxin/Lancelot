@@ -153,6 +153,11 @@ void uartSent(int _type)
 		Data_pre_target();
 		break;
 	}
+	case UART_SENT_TYPE_SCAN:
+	{
+		Data_pre_scan_target();
+		break;
+	}
 
 	default:
 		break;
@@ -233,6 +238,31 @@ void Data_pre_target()
 
 	data_to_send[_cnt++] = int(have_target);
 	data_to_send[_cnt++] = target_num;
+
+	data_to_send[3] = _cnt - 4;
+
+	for (i = 0; i < _cnt; i++)
+		sum += data_to_send[i];
+	data_to_send[_cnt++] = sum;
+	Length = _cnt;
+}
+
+void Data_pre_scan_target()
+{
+	int _cnt = 0, i = 0, sum = 0;
+	unsigned int _temp;
+	data_to_send[_cnt++] = 0xAA;
+	data_to_send[_cnt++] = 0xAF;
+	data_to_send[_cnt++] = 0x06;
+	data_to_send[_cnt++] = 0;
+
+	for (size_t i = 0; i < target_global.size(); i++)
+	{
+		data_to_send[_cnt++] = target_global[i].number_[0];
+		data_to_send[_cnt++] = int(target_global[i].position_.x) / 255;
+		data_to_send[_cnt++] = int(target_global[i].position_.x) % 255;
+		data_to_send[_cnt++] = int(target_global[i].position_.y);
+	}
 
 	data_to_send[3] = _cnt - 4;
 

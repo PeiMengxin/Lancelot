@@ -44,6 +44,7 @@ char ignore_char[10] = {66, 66, 66, 66, 66, 66, 66, 66, 66, 66};
 int pre_check_count[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 NumberPosition number_position_send;
+vector<NumberPosition> target_global(6);
 
 int main(int argc, char **argv)
 {
@@ -59,8 +60,8 @@ int main(int argc, char **argv)
 
 	VideoCapture cap;
 
-	ofstream log_out;
-	log_out.open("log.txt");
+	// ofstream log_out;
+	// log_out.open("log.txt");
 
 	string videoName;
 	if (argc >= 2)
@@ -113,6 +114,7 @@ int main(int argc, char **argv)
 #endif
 
 	Mat src, src_temp, src_save;
+	cap.set(CV_CAP_PROP_FPS, 60);
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
 	cap >> src;
@@ -187,7 +189,7 @@ int main(int argc, char **argv)
 	while (true)
 	{
 		frame++;
-		log_out << "frame: " << frame << endl;
+// log_out << "frame: " << frame << endl;
 
 #if USE_CAMERA
 		cap >> src_temp;
@@ -234,6 +236,14 @@ int main(int argc, char **argv)
 					pre_check_count[i] = 0;
 				}
 				//continue;
+			}
+			if (state_num == SD_SCAN)
+			{
+				detectNumber(src, tess, target_global);
+				for (size_t i = target_global.size(); i < 6; i++)
+				{
+					target_global.push_back(NumberPosition());
+				}
 			}
 			//state_num == SD_CHECK_TARGET;
 			if (state_num == SD_CHECK_TARGET)
@@ -429,7 +439,7 @@ int main(int argc, char **argv)
 			start_track = false;
 		}
 
-		if (number_position_send.position_.x >= 0)
+		if (number_position_send.position_.x > 0)
 		{
 			sprintf(temp_text, "position=%d,%d",
 					int(number_position_send.position_.x),
@@ -440,6 +450,7 @@ int main(int argc, char **argv)
 
 		drawImage(src);
 
+		uartSent(UART_SENT_TYPE_SCAN);
 		uartSent(UART_SENT_TYPE_CHARACTER);
 		uartSent(UART_SENT_TYPE_TARGET);
 		uartSent(UART_SENT_TYPE_MOUSE);
@@ -489,7 +500,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	log_out.close();
+	// log_out.close();
 	if (video_writer.isOpened())
 	{
 		video_writer.release();

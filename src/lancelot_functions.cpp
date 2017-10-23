@@ -9,7 +9,7 @@ using namespace std;
 
 void init()
 {
-    state_str.resize(30, "none");
+    state_str.resize(40, "none");
     state_str[SG_LOW_CHECK] = "G_LC";
     state_str[SG_MID_CHECK] = "G_MC";
     state_str[SU_UP1] = "U_UP1";
@@ -34,6 +34,7 @@ void init()
     state_str[BREAK] = "BREAK";
     state_str[SHUT] = "SHUT";
     state_str[GO_HOME] = "GO_HOME";
+    state_str[SD_SCAN] = "SCAN_TARGETS";
 }
 
 std::string get_time()

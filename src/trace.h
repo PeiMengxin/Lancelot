@@ -33,5 +33,6 @@ extern std::vector<std::string> state_str;
 extern char ignore_char[10];
 extern int debug_screen;
 extern int flag_LX_target;
+extern std::vector<NumberPosition> target_global;
 
 #endif /* TRACE_H_ */
