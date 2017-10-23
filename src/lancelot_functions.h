@@ -15,7 +15,9 @@
 #define SD_FLY_TARGET 6    //"FLY_TARGET"
 #define SD_CHECK_TARGET 7  //"CHK_TARGET"
 #define TO_START 8         //"TO_START"
-#define SD_SCAN 9
+#define SD_SCAN_9 9
+#define SD_SCAN_10 10
+#define SD_SCAN_11 11
 
 #define SD_HOLD 13             //"D_HOLD"
 #define SD_MISS_SEARCH 14      //"D_MISS"

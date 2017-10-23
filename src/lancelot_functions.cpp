@@ -34,7 +34,9 @@ void init()
     state_str[BREAK] = "BREAK";
     state_str[SHUT] = "SHUT";
     state_str[GO_HOME] = "GO_HOME";
-    state_str[SD_SCAN] = "SCAN_TARGETS";
+    state_str[SD_SCAN_9] = "SCAN_TARGETS";
+    state_str[SD_SCAN_10] = "SCAN_TARGETS";
+    state_str[SD_SCAN_11] = "SCAN_TARGETS";
 }
 
 std::string get_time()

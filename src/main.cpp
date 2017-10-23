@@ -237,7 +237,7 @@ int main(int argc, char **argv)
 				}
 				//continue;
 			}
-			if (state_num == SD_SCAN)
+			if (state_num == SD_SCAN_9 || state_num == SD_SCAN_10 || state_num == SD_SCAN_11)
 			{
 				detectNumber(src, tess, target_global);
 				for (size_t i = target_global.size(); i < 6; i++)
@@ -413,7 +413,16 @@ int main(int argc, char **argv)
 			else
 			{
 				number_position_send.init();
+				target_global.clear();
 				detectNumber(src, tess, result);
+				for (size_t i = 0; i < result.size(); i++)
+				{
+					target_global.push_back(result[i]);
+				}
+				for (size_t i = target_global.size(); i < 6; i++)
+				{
+					target_global.push_back(NumberPosition());
+				}
 
 				for (size_t i = 0; i < result.size(); i++)
 				{

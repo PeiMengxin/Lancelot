@@ -258,7 +258,7 @@ void Data_pre_scan_target()
 
 	for (size_t i = 0; i < target_global.size(); i++)
 	{
-		data_to_send[_cnt++] = target_global[i].number_[0];
+		data_to_send[_cnt++] = target_global[i].number_[0] - '0';
 		data_to_send[_cnt++] = int(target_global[i].position_.x) / 255;
 		data_to_send[_cnt++] = int(target_global[i].position_.x) % 255;
 		data_to_send[_cnt++] = int(target_global[i].position_.y);
