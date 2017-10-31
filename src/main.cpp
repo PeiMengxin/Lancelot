@@ -222,6 +222,9 @@ int main(int argc, char **argv)
 			continue;
 		}
 
+		target_global.clear();
+		target_global.resize(6, NumberPosition());
+
 		if (flag_LX_target == 1)
 		{
 			if (state_num == SD_FLY_TARGET)
@@ -371,7 +374,7 @@ int main(int argc, char **argv)
 			character_to_recog = char_num;
 		}
 
-		if ((flag_LX_target == 0) || (state_num > 10)) //fly to workspace, detect, track, print and so on
+		if ((flag_LX_target == 0) || (state_num >= SD_HOLD)) //fly to workspace, detect, track, print and so on
 		{
 			if (start_track)
 			{
