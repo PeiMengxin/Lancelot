@@ -5,7 +5,7 @@
 #include "imageTrans.h"
 #include "my_serial.h"
 #include <CorrelationTracker/CorrelationTracker.h>
-
+#include <DigitDetector/DigitDetector_interface.h>
 using namespace std;
 using namespace cv;
 
@@ -13,6 +13,26 @@ bool LBtnDown = false;
 int debug_screen = 0;
 int flag_LX_target = 1;
 extern Mat number_template[10];
+
+bool detectNumber_digitdetector(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame, std::vector<NumberPosition> &result)
+{
+	result.clear();
+	vector<std::tuple<int, double, cv::Rect>> &&res = findPrintDigitAreas(nn, detector, frame);
+	for (size_t i = 0; i < res.size(); ++i)
+	{
+		stringstream ss;
+		ss << std::get<0>(res[i]);
+		NumberPosition np;
+		ss >> np.number_;
+		np.boundRect = std::get<2>(res[i]);
+		np.position_ = (np.boundRect.tl() + np.boundRect.br()) / 2;
+
+		result.push_back(np);
+	}
+	std::sort(result.begin(), result.end(), SortByNumberUp);
+
+	return true;
+}
 
 void onMouse(int event, int x, int y, int, void *param)
 {
@@ -46,6 +66,8 @@ int pre_check_count[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 NumberPosition number_position_send;
 vector<NumberPosition> target_global(6);
 
+#define USE_DIGITDETECTOR 1
+
 int main(int argc, char **argv)
 {
 	init();
@@ -53,15 +75,16 @@ int main(int argc, char **argv)
 	std::thread uart_read_thread(uartReadThread);
 
 	tesseract::TessBaseAPI tess;
-
 	tess.Init(NULL, "eng");
-
 	tess.SetPageSegMode(tesseract::PageSegMode::PSM_SINGLE_CHAR);
 
-	VideoCapture cap;
+	DigitDetector detector;
+	TwoLayerNNFaster nn_print(TEST);
+	TwoLayerNNFaster nn_led(TEST);
+	nn_print.loadParams((expand_user("~") + "/Lancelot/DigitDetector/params_hist_iter_12000.txt").c_str());
+	nn_led.loadParams((expand_user("~") + "/Lancelot/DigitDetector/params_hist_led.txt").c_str());
 
-	// ofstream log_out;
-	// log_out.open("log.txt");
+	VideoCapture cap;
 
 	string videoName;
 	if (argc >= 2)
@@ -97,7 +120,7 @@ int main(int argc, char **argv)
 #define USE_SPACE 0
 
 #if USE_CAMERA
-	cap.open(0);
+	cap.open(1);
 	waitKey(1000);
 
 	if (!cap.isOpened())
@@ -161,7 +184,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	//TickMeter tm;
+	TickMeter tm;
+	tm.getTimeMilli();
 
 	int frame = 0;
 	int frame_check = 0;
@@ -242,7 +266,11 @@ int main(int argc, char **argv)
 			}
 			if (state_num == SD_SCAN_9 || state_num == SD_SCAN_10 || state_num == SD_SCAN_11)
 			{
+#if USE_DIGITDETECTOR
+				detectNumber_digitdetector(nn_print, detector, src, target_global);
+#else
 				detectNumber(src, tess, target_global);
+#endif
 				for (size_t i = target_global.size(); i < 6; i++)
 				{
 					target_global.push_back(NumberPosition());
@@ -264,7 +292,11 @@ int main(int argc, char **argv)
 						pre_check_count[i] = 0;
 					}
 				}
+#if USE_DIGITDETECTOR
+				detectNumber_digitdetector(nn_print, detector, src, result);
+#else
 				detectNumber(src, tess, result);
+#endif
 				bool checked = false;
 				bool ignored = false;
 
@@ -378,8 +410,15 @@ int main(int argc, char **argv)
 		{
 			if (start_track)
 			{
-				// tracker_psr = tracker.update(imgGray) * 2;
+#if COUT_TIME
+				tm.reset();
+				tm.start();
 				tracker.update(imgGray);
+				tm.stop();
+				cout << "tracker.update: " << tm.getTimeMilli() << " ms" << endl;
+#else
+				tracker.update(imgGray);
+#endif
 				tracker_psr = tracker.getPSR() * 2;
 				static int cnt_loss_track = 0, cnt_loss_track5 = 0;
 				if (tracker_psr < 12)
@@ -417,7 +456,11 @@ int main(int argc, char **argv)
 			{
 				number_position_send.init();
 				target_global.clear();
+#if USE_DIGITDETECTOR
+				detectNumber_digitdetector(nn_print, detector, src, result);
+#else
 				detectNumber(src, tess, result);
+#endif
 				for (size_t i = 0; i < result.size(); i++)
 				{
 					target_global.push_back(result[i]);
@@ -435,8 +478,15 @@ int main(int argc, char **argv)
 						number_position_send.number_ = result[i].number_;
 						number_position_send.position_ = result[i].position_;
 						number_position_send.boundRect = result[i].boundRect;
-
+#if COUT_TIME
+						tm.reset();
+						tm.start();
 						tracker.startTrack(imgGray, number_position_send.boundRect);
+						tm.stop();
+						cout << "tracker.startTrack: " << tm.getTimeMilli() << " ms" << endl;
+#else
+						tracker.startTrack(imgGray, number_position_send.boundRect);
+#endif
 						start_track = true;
 					}
 					putText(src, result[i].number_, result[i].position_,

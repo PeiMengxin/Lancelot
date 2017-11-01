@@ -459,6 +459,11 @@ cv::Point getCharRectCenter(CharacterImg charcterImg)
 void detectNumber(cv::Mat src, tesseract::TessBaseAPI &tess,
 				  std::vector<NumberPosition> &result)
 {
+#if COUT_TIME
+	cv::TickMeter tm;
+	tm.reset();
+	tm.start();
+#endif
 	result.clear();
 	int g_nStructElementSize = 1;
 
@@ -643,6 +648,11 @@ void detectNumber(cv::Mat src, tesseract::TessBaseAPI &tess,
 	}
 
 	std::sort(result.begin(), result.end(), SortByNumberUp);
+
+#if COUT_TIME
+	tm.stop();
+	cout << "detect num: " << tm.getTimeMilli() << " ms" << endl;
+#endif
 }
 
 bool isNumberChar(char &c)

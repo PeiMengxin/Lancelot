@@ -79,6 +79,10 @@ private:
 
 };
 
+bool SortByRectAreaUp(const cv::Rect &r1, const cv::Rect &r2);
+bool SortByRectAreaDown(const cv::Rect &r1, const cv::Rect &r2);
+bool SortByNumberUp(const NumberPosition &n1, const NumberPosition &n2);
+
 void getBlack(cv::Mat src, cv::Mat &dst, cv::Scalar blackUpperValue);	// get black area
 void getRed(cv::Mat src, cv::Mat &dst, cv::Scalar redUpperValue);
 void getCharCandRegions(const cv::Mat black, cv::Mat &charImg, cv::Rect &charRect);	// get character candidate regions

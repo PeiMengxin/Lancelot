@@ -16,6 +16,8 @@
 #include <serial/serial.h>
 #include <unistd.h>
 
+#define COUT_TIME 0
+
 extern int circle_check, circles_x, circles_y, circles_r, track_check, state_v;
 extern int mouse_x, mouse_y;
 extern unsigned char circle_control[4];
