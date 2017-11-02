@@ -96,9 +96,9 @@ int main(int argc, char **argv)
 
 	cv::namedWindow("bar");
 	int psr_threshold = 20;
-	int flag_writevideo = 1;
+	int flag_writevideo = 0;
 	int flag_writing = 0;
-	int flag_writevideo_src = 1;
+	int flag_writevideo_src = 0;
 	int flag_writing_src = 0;
 	int check_count_thres = 3;
 	int pre_check_count_thres = 8;
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 #define USE_SPACE 0
 
 #if USE_CAMERA
-	cap.open(1);
+	cap.open(0);
 	waitKey(1000);
 
 	if (!cap.isOpened())
