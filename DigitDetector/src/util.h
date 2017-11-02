@@ -18,6 +18,8 @@ using namespace std;
 
 Rect findDigitBndBox(Mat& image);
 
+int Compare (const int& a, const int& b);
+
 void nms(vector<Rect>& rects);
 
 #endif /* SRC_UTIL_H_ */

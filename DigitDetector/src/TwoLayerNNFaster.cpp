@@ -80,6 +80,8 @@ void TwoLayerNNFaster::release(){
 	delete output;
 	delete yLayer1;
 	delete yLayer2;
+	delete b1;
+	delete b2;
 	if(mode==TRAIN or mode==FINETUNE){
 		delete gW1;
 		delete gW2;
@@ -87,6 +89,7 @@ void TwoLayerNNFaster::release(){
 		delete gb2;
 		delete dLayer1;
 		delete dLayer2;
+		delete batchLabels;
 	}
 }
 
@@ -128,8 +131,11 @@ void TwoLayerNNFaster::shuffle(){
 double TwoLayerNNFaster::forward(){
 	double sum_loss=0.0;
 	int offset=0;
+	//yLayer1=batchSamples*W1: [N*H]=[N*D].[D*H]
+	//alpha*A*B+beta*C-->C
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, minibatch, nLayers[1], nLayers[0], \
 			1.0, batchSamples, nLayers[0], W1, nLayers[1], 0.0, yLayer1, nLayers[1]);
+	//yLayer2
 	for(int i=0;i<minibatch*nLayers[1];++i){
 		if(yLayer1[i]<0.0)
 			yLayer1[i]=0.0;
@@ -156,14 +162,19 @@ double TwoLayerNNFaster::forward(){
 		output[offset+batchLabels[i]]-=1.0;
 		for(int j=0;j<nLayers[2];++j){
 			dLayer2[j+offset]= output[j+offset]/minibatch;
+			//cout<<dLayer2[j+offset]<<",";
 		}
+		//cout<<endl;
 		offset+=nLayers[2];
 	}
+	//gW2=yLayer1T*dLayer2: [H*O]=[H*N].[N*O]
 	cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, nLayers[1], nLayers[2], minibatch, \
 			1.0, yLayer1, nLayers[1], dLayer2, nLayers[2], 0.0, gW2, nLayers[2]);
 
+	//dLayer1=dLayer2*W2T: [N*H]=[N*O].[O*H]
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, minibatch, nLayers[1], nLayers[2],\
 			1.0, dLayer2, nLayers[2], W2, nLayers[2], 0.0, dLayer1, nLayers[1]);
+	//gW1=batchSamplesT*dLayer1: [D*H]=[D*N].[N*H]
 	cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, nLayers[0], nLayers[1], minibatch, \
 			1.0, batchSamples, nLayers[0], dLayer1, nLayers[1], 0.0, gW1, nLayers[1]);
 	for(int j=0;j<nLayers[1];++j){
@@ -181,6 +192,58 @@ double TwoLayerNNFaster::forward(){
 	return sum_loss;
 }
 
+void TwoLayerNNFaster::getFeature(Mat& image, int batchIndex){
+	Mat digit;
+	if(image.channels()==3)
+		cv::cvtColor(image, digit, cv::COLOR_BGR2GRAY);
+	else
+		image.copyTo(digit);
+	cv::threshold(digit, digit, 50,255, cv::THRESH_OTSU);
+	resize(digit, digit, Size(resz_w, resz_h), cv::INTER_CUBIC);
+	assert(digit.rows*digit.cols==nLayers[0]);
+	cv::threshold(digit, digit, 50, 255, cv::THRESH_OTSU);
+	uchar* data=digit.data;
+	int val;
+	int offset=batchIndex*nLayers[0];
+	for(int i=0;i<digit.rows*digit.cols;++i){
+		val=(int)data[i];
+		batchSamples[offset+i]=val>50?0.0:1.0;
+	}
+}
+
+void TwoLayerNNFaster::getFeatureX(Mat& image, int batchIndex){
+	//Mat digit;image.copyTo(digit);
+	Mat digit;
+	if(image.channels()==3)
+		cv::cvtColor(image, digit, cv::COLOR_BGR2GRAY);
+	else
+		image.copyTo(digit);
+	cv::threshold(digit, digit, 50,255, cv::THRESH_OTSU);
+	uchar* digitdata=digit.data;
+	int h=digit.rows;
+	int w=digit.cols;
+	int max_cnt=-100;
+	double bin_size_h=static_cast<double>(h)/(pool_h);
+	double bin_size_w=static_cast<double>(w)/(pool_w);
+
+	int offset=batchIndex*nLayers[0];
+	for(int ph=0;ph<pool_h;++ph){
+		int start_h=std::max<int>(0,round(ph*bin_size_h));
+		int end_h=std::min<int>(h,round((ph+1)*bin_size_h));
+		for(int pw=0;pw<pool_w;++pw){
+			int start_w=std::max<int>(0,round(pw*bin_size_w));
+			int end_w=std::min<int>(w,round((pw+1)*bin_size_w));
+			int cnt=0;
+			for(int y=start_h;y<end_h;++y){
+				for(int x=start_w;x<end_w;++x){
+					if(digitdata[y*w+x]==0)	++cnt;
+				}
+			}
+			if(cnt>max_cnt)	max_cnt=cnt;
+			batchSamples[offset+(ph*pool_w+pw)]=static_cast<double>(cnt);
+		}
+	}
+}
 
 void TwoLayerNNFaster::backward(){
 	for(int i=0;i<nLayers[0]*nLayers[1];++i){
@@ -257,60 +320,10 @@ void TwoLayerNNFaster::predict(Mat& image, int& pred, double& prob){
 		output[j]/=sum_out;
 	}
 	prob=output[pred];
+	//cout<<"prob: "<<output[pred]<<endl;
+	//cout<<pred<<endl;
 	if(output[pred]<0.8)
 		pred=-1;
-}
-
-void TwoLayerNNFaster::getFeature(Mat& image, int batchIndex){
-	Mat digit;
-	if(image.channels()==3)
-		cv::cvtColor(image, digit, cv::COLOR_BGR2GRAY);
-	else
-		image.copyTo(digit);
-	cv::threshold(digit, digit, 50,255, cv::THRESH_OTSU);
-	resize(digit, digit, Size(resz_w, resz_h), cv::INTER_CUBIC);
-	assert(digit.rows*digit.cols==nLayers[0]);
-	cv::threshold(digit, digit, 50, 255, cv::THRESH_OTSU);
-	uchar* data=digit.data;
-	int val;
-	int offset=batchIndex*nLayers[0];
-	for(int i=0;i<digit.rows*digit.cols;++i){
-		val=(int)data[i];
-		batchSamples[offset+i]=val>50?0.0:1.0;
-	}
-}
-
-void TwoLayerNNFaster::getFeatureX(Mat& image, int batchIndex){
-	Mat digit;
-	if(image.channels()==3)
-		cv::cvtColor(image, digit, cv::COLOR_BGR2GRAY);
-	else
-		image.copyTo(digit);
-	cv::threshold(digit, digit, 50,255, cv::THRESH_OTSU);
-	uchar* digitdata=digit.data;
-	int h=digit.rows;
-	int w=digit.cols;
-	int max_cnt=-100;
-	double bin_size_h=static_cast<double>(h)/(pool_h);
-	double bin_size_w=static_cast<double>(w)/(pool_w);
-
-	int offset=batchIndex*nLayers[0];
-	for(int ph=0;ph<pool_h;++ph){
-		int start_h=std::max<int>(0,round(ph*bin_size_h));
-		int end_h=std::min<int>(h,round((ph+1)*bin_size_h));
-		for(int pw=0;pw<pool_w;++pw){
-			int start_w=std::max<int>(0,round(pw*bin_size_w));
-			int end_w=std::min<int>(w,round((pw+1)*bin_size_w));
-			int cnt=0;
-			for(int y=start_h;y<end_h;++y){
-				for(int x=start_w;x<end_w;++x){
-					if(digitdata[y*w+x]==0)	++cnt;
-				}
-			}
-			if(cnt>max_cnt)	max_cnt=cnt;
-			batchSamples[offset+(ph*pool_w+pw)]=static_cast<double>(cnt);
-		}
-	}
 }
 
 void TwoLayerNNFaster::saveParams(const char* filename){

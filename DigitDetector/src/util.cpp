@@ -40,8 +40,16 @@ Rect findDigitBndBox(Mat& image){
 	return bndbox;
 }
 
+int Compare (const int& a, const int& b)
+{
+  return a<b;
+}
+
 void nms(vector<Rect>& rects){
 	vector<int> deleteIdx;
+	vector<char> flags(rects.size());
+	for(size_t i=0;i<flags.size();++i)
+		flags[i]=0;
 	int areai,areaj,nms_area,nms_rbx,nms_rby,nms_ltx,nms_lty, nms_w, nms_h;
 	for(size_t i=0;i<rects.size();++i){
 		Rect& reci=rects[i];
@@ -59,16 +67,29 @@ void nms(vector<Rect>& rects){
 			nms_area=nms_w*nms_h;
 			float ratio2i=1.0*nms_area/areai;
 			float ratio2j=1.0*nms_area/areaj;
-			if(ratio2i>0.8)
+			if(ratio2i>0.8 and not flags[i]){
 				deleteIdx.push_back(i);
-			else if(ratio2j>0.8)
+				flags[i]=1;
+			}
+			else if(ratio2j>0.8 and not flags[j]){
 				deleteIdx.push_back(j);
+				flags[j]=1;
+			}
 		}
 	}
-	vector<Rect>::iterator begin=rects.begin();
-	int k=0;
-	for(size_t i=0;i<deleteIdx.size();++i){
-		k=deleteIdx[i]-i;
-		rects.erase(begin+k);
+	if(deleteIdx.size()>0){
+		auto beginner=rects.begin();
+		/*
+		cout<<rects.size()<<": ";
+		for(size_t i=0;i<deleteIdx.size();++i)
+			cout<<deleteIdx[i]<<",";
+		cout<<endl;
+		*/
+		sort(deleteIdx.begin(), deleteIdx.end(), Compare);
+		int k=0;
+		for(size_t i=0;i<deleteIdx.size();++i){
+			k=deleteIdx[i]-i;
+			rects.erase(beginner+k);
+		}
 	}
 }
