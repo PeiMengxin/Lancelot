@@ -10,7 +10,8 @@
 
 /**Operating params
 */
-struct Params{
+struct Params
+{
 	//method emplpoyed for image threshold
 	//ThresholdMethods _thresMethod;
 	// Threshold parameters
@@ -35,7 +36,8 @@ struct Params{
 	// The marker is visible, but relatively small, so, we set a minimum size expressed in pixels to avoid discarding it
 	float _minSize, _maxSize;
 	int _minSize_pix;
-	Params(){
+	Params()
+	{
 		//_thresMethod = ADPT_THRES;
 		//_thresParam1 = _thresParam2 = 7;
 		//_cornerMethod = LINES;
@@ -43,29 +45,29 @@ struct Params{
 		//_thresParam1_range = 0;
 		//_markerWarpSize = 56;
 
-		_minSize = 0.04; _maxSize = 0.9; _minSize_pix = 25;
+		_minSize = 0.04;
+		_maxSize = 0.9;
+		_minSize_pix = 25;
 		_borderDistThres = 0.005; // corners at a distance from image boundary nearer than 2.5% of image are ignored
-		//_subpix_wsize = 5;//window size employed for subpixel search (in vase you use _cornerMethod=SUBPIX
+								  //_subpix_wsize = 5;//window size employed for subpixel search (in vase you use _cornerMethod=SUBPIX
 	}
-
 };
 
 class CharacterImg
 {
-public:
+  public:
 	CharacterImg();
 	~CharacterImg();
 
 	cv::Mat img_;
 	std::vector<cv::Point> poly_;
 
-private:
-
+  private:
 };
 
 class NumberPosition
 {
-public:
+  public:
 	NumberPosition();
 	~NumberPosition();
 
@@ -75,38 +77,37 @@ public:
 
 	void init();
 
-private:
-
+  private:
 };
 
 bool SortByRectAreaUp(const cv::Rect &r1, const cv::Rect &r2);
 bool SortByRectAreaDown(const cv::Rect &r1, const cv::Rect &r2);
 bool SortByNumberUp(const NumberPosition &n1, const NumberPosition &n2);
 
-void getBlack(cv::Mat src, cv::Mat &dst, cv::Scalar blackUpperValue);	// get black area
-void getRed(cv::Mat src, cv::Mat &dst, cv::Scalar redUpperValue);
-void getCharCandRegions(const cv::Mat black, cv::Mat &charImg, cv::Rect &charRect);	// get character candidate regions
+void getBlack(cv::Mat &src, cv::Mat &dst, cv::Scalar blackUpperValue); // get black area
+void getRed(cv::Mat &src, cv::Mat &dst, cv::Scalar redUpperValue);
+void getCharCandRegions(const cv::Mat &black, cv::Mat &charImg, cv::Rect &charRect); // get character candidate regions
 
-void detectRectangles(cv::Mat &thresImg, std::vector< std::vector< cv::Point > > &outPolyCanditates);
-void detectRectangles(std::vector< cv::Mat > &thresImgv, std::vector< std::vector< cv::Point > > &outPolyCanditates);
+void detectRectangles(cv::Mat &thresImg, std::vector<std::vector<cv::Point>> &outPolyCanditates);
+void detectRectangles(std::vector<cv::Mat> &thresImgv, std::vector<std::vector<cv::Point>> &outPolyCanditates);
 
-void makeAntiClockWise(std::vector< std::vector< cv::Point > > &polys);
+void makeAntiClockWise(std::vector<std::vector<cv::Point>> &polys);
 bool isAntiClockWise(cv::Point o, cv::Point a, cv::Point b);
 
-void getCharRect(cv::Mat img, std::vector< std::vector< cv::Point > > polys, std::vector<CharacterImg> &charRectImg, cv::Size size_);
+void getCharRect(cv::Mat &img, std::vector<std::vector<cv::Point>> &polys, std::vector<CharacterImg> &charRectImg, cv::Size size_);
 
-cv::Point getCharRectCenter(CharacterImg charcterImg);
+cv::Point getCharRectCenter(CharacterImg &charcterImg);
 
-void detectNumber(cv::Mat src, tesseract::TessBaseAPI &tess, std::vector<NumberPosition> &result);
+void detectNumber(cv::Mat &src, tesseract::TessBaseAPI &tess, std::vector<NumberPosition> &result);
 
-int perimeter(std::vector< cv::Point > &a);
+int perimeter(std::vector<cv::Point> &a);
 
 bool isNumberChar(char &c);
 bool isNumberChar_checkScreen(char &c);
-char getNumByTemplate(cv::Mat char_img);
+char getNumByTemplate(cv::Mat &char_img);
 
-
-template < typename T > void joinVectors(std::vector< std::vector< T > > &vv, std::vector< T > &v, bool clearv = false) 
+template <typename T>
+void joinVectors(std::vector<std::vector<T>> &vv, std::vector<T> &v, bool clearv = false)
 {
 	if (clearv)
 		v.clear();
@@ -115,12 +116,15 @@ template < typename T > void joinVectors(std::vector< std::vector< T > > &vv, st
 			v.push_back(vv[i][j]);
 }
 
-template < typename T > void removeElements(std::vector< T > &vinout, const std::vector< bool > &toRemove)
+template <typename T>
+void removeElements(std::vector<T> &vinout, const std::vector<bool> &toRemove)
 {
 	// remove the invalid ones by setting the valid in the positions left by the invalids
 	size_t indexValid = 0;
-	for (size_t i = 0; i < toRemove.size(); i++) {
-		if (!toRemove[i]) {
+	for (size_t i = 0; i < toRemove.size(); i++)
+	{
+		if (!toRemove[i])
+		{
 			if (indexValid != i)
 				vinout[indexValid] = vinout[i];
 			indexValid++;
@@ -130,4 +134,3 @@ template < typename T > void removeElements(std::vector< T > &vinout, const std:
 }
 
 #endif // __CharacterRecognition_H__
-

@@ -9,7 +9,7 @@ using namespace cv;
 
 Mat number_template[10];
 
-void getBlack(cv::Mat src, cv::Mat &dst, cv::Scalar blackUpperValue)
+void getBlack(cv::Mat &src, cv::Mat &dst, cv::Scalar blackUpperValue)
 {
 	dst.create(src.size(), CV_8UC1);
 	dst.setTo(Scalar(0));
@@ -17,7 +17,7 @@ void getBlack(cv::Mat src, cv::Mat &dst, cv::Scalar blackUpperValue)
 	inRange(src, blackUpperValue, Scalar(255, 255, 255), dst);
 }
 
-void getRed(cv::Mat src, cv::Mat &dst, cv::Scalar redUpperValue)
+void getRed(cv::Mat &src, cv::Mat &dst, cv::Scalar redUpperValue)
 {
 	dst.create(src.size(), CV_8UC1);
 	dst.setTo(Scalar(0));
@@ -40,7 +40,7 @@ bool SortByNumberUp(const NumberPosition &n1, const NumberPosition &n2)
 	return n1.number_[0] < n2.number_[0];
 }
 
-void getCharCandRegions(const cv::Mat black, cv::Mat &charImg,
+void getCharCandRegions(const cv::Mat &black, cv::Mat &charImg,
 						cv::Rect &charRect)
 {
 	CV_Assert(black.type() == CV_8UC1);
@@ -360,7 +360,7 @@ void makeAntiClockWise(std::vector<std::vector<cv::Point>> &polys)
 	}
 }
 
-void getCharRect(cv::Mat img, std::vector<std::vector<cv::Point>> polys,
+void getCharRect(cv::Mat &img, std::vector<std::vector<cv::Point>> &polys,
 				 std::vector<CharacterImg> &charRectImg, cv::Size size_)
 {
 	if (polys.size() <= 0)
@@ -442,7 +442,7 @@ int perimeter(std::vector<cv::Point> &a)
 	return sum;
 }
 
-cv::Point getCharRectCenter(CharacterImg charcterImg)
+cv::Point getCharRectCenter(CharacterImg &charcterImg)
 {
 	Point center(0, 0);
 	for (size_t j = 0; j < charcterImg.poly_.size(); j++)
@@ -456,7 +456,7 @@ cv::Point getCharRectCenter(CharacterImg charcterImg)
 	return center;
 }
 
-void detectNumber(cv::Mat src, tesseract::TessBaseAPI &tess,
+void detectNumber(cv::Mat &src, tesseract::TessBaseAPI &tess,
 				  std::vector<NumberPosition> &result)
 {
 #if COUT_TIME
@@ -681,7 +681,7 @@ bool isNumberChar_checkScreen(char &c)
 	return false;
 }
 
-char getNumByTemplate(cv::Mat char_img)
+char getNumByTemplate(cv::Mat &char_img)
 {
 	Scalar scores[10] = {0};
 	Mat diff;
