@@ -271,6 +271,11 @@ int main(int argc, char **argv)
 #else
 				detectNumber(src, tess, target_global);
 #endif
+				for (size_t i = 0; i < target_global.size(); i++)
+				{
+					putText(src, target_global[i].number_, target_global[i].position_,
+							FONT_HERSHEY_SIMPLEX, 1, CV_RGB(255, 0, 0), 2);
+				}
 				for (size_t i = target_global.size(); i < 6; i++)
 				{
 					target_global.push_back(NumberPosition());
