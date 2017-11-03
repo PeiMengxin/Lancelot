@@ -37,6 +37,7 @@ void init()
     state_str[SD_SCAN_9] = "SCAN_TARGETS";
     state_str[SD_SCAN_10] = "SCAN_TARGETS";
     state_str[SD_SCAN_11] = "SCAN_TARGETS";
+    state_str[FLY_DIRECT] = "FLY_DIRECT";
 }
 
 std::string get_time()

@@ -33,6 +33,7 @@
 #define BREAK 24               //"BREAK"
 #define SHUT 25                //"SHUT"
 #define GO_HOME 26             //"GO_HOME"
+#define FLY_DIRECT 32          //"FLY_DIRECT"
 
 void init();
 
