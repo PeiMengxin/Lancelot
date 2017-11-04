@@ -4,6 +4,7 @@
 #include "trace.h"
 #include "imageTrans.h"
 #include "my_serial.h"
+#include "inifile.h"
 #include <CorrelationTracker/CorrelationTracker.h>
 #include <DigitDetector/DigitDetector_interface.h>
 using namespace std;
@@ -63,6 +64,17 @@ bool have_target = false;
 char ignore_char[10] = {66, 66, 66, 66, 66, 66, 66, 66, 66, 66};
 int pre_check_count[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+int camera_id = 0;
+int get_camera_id(int &id)
+{
+	inifile::IniFile m_inifile;
+	m_inifile.load(expand_user("~") + "/Lancelot/config/config.ini");
+	int ret = 0;
+	id = m_inifile.getIntValue("Camera", "id", ret);
+	cout << "Camera id: " << id << endl;
+	return ret;
+}
+
 NumberPosition number_position_send;
 vector<NumberPosition> target_global(6);
 
@@ -72,6 +84,10 @@ int main(int argc, char **argv)
 {
 	init();
 
+	if (get_camera_id(camera_id) != 0)
+	{
+		camera_id = 0;
+	}
 	std::thread uart_read_thread(uartReadThread);
 
 	tesseract::TessBaseAPI tess;
@@ -120,7 +136,7 @@ int main(int argc, char **argv)
 #define USE_SPACE 0
 
 #if USE_CAMERA
-	cap.open(0);
+	cap.open(camera_id);
 	waitKey(1000);
 
 	if (!cap.isOpened())
