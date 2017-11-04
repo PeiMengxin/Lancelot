@@ -66,7 +66,7 @@ int pre_check_count[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 NumberPosition number_position_send;
 vector<NumberPosition> target_global(6);
 
-#define USE_DIGITDETECTOR 1
+#define USE_DIGITDETECTOR 0
 
 int main(int argc, char **argv)
 {
