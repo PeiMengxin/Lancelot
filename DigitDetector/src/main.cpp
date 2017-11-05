@@ -55,12 +55,12 @@ vector<std::tuple<int, double, cv::Rect>> findLedDigitAreas1(TwoLayerNNFaster &n
 int main(int argc, char **argv)
 {
 	VideoCapture cap;
-	// cap.open("/home/auto710/workspace/video/5000.avi");
-	cap.open(1);
+	cap.open("/home/auto710/Lancelot/video/实验视频/124.avi");
+	//cap.open(1);
 	DigitDetector detector;
 	TwoLayerNNFaster nn_print(TEST);
 	TwoLayerNNFaster nn_led(TEST);
-	nn_print.loadParams("/home/auto710/Lancelot/DigitDetector/params_hist_iter_12000.txt");
+	nn_print.loadParams("/home/auto710/Lancelot/DigitDetector/nn_params_hist_iter_12000.txt");
 	nn_led.loadParams("/home/auto710/Lancelot/DigitDetector/params_hist_led.txt");
 	int fps = cap.get(cv::CAP_PROP_FPS);
 	cout << "fps: " << fps << endl;
