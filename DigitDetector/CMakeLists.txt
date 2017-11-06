@@ -28,7 +28,8 @@ target_link_libraries(${PROJECT_NAME}_exe ${OpenCV_LIBS} blas)
 
 file(GLOB dd_headers ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
 file(COPY ${dd_headers} DESTINATION "${CMAKE_BINARY_DIR}/include/DigitDetector")
-file(GLOB dd_params ${CMAKE_CURRENT_SOURCE_DIR}/params*)
+file(GLOB dd_params ${CMAKE_CURRENT_SOURCE_DIR}/*.txt)
+list(REMOVE_ITEM dd_params ${PROJECT_SOURCE_DIR}/CMakeLists.txt)
 file(COPY ${dd_params} DESTINATION "${CMAKE_SOURCE_DIR}/config")
 
 # install target

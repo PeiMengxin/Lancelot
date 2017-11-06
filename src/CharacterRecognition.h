@@ -99,6 +99,7 @@ void getCharRect(cv::Mat &img, std::vector<std::vector<cv::Point>> &polys, std::
 cv::Point getCharRectCenter(CharacterImg &charcterImg);
 
 void detectNumber(cv::Mat &src, tesseract::TessBaseAPI &tess, std::vector<NumberPosition> &result);
+void detectNumber_LED(cv::Mat &src, tesseract::TessBaseAPI &tess, std::vector<NumberPosition> &result);
 
 int perimeter(std::vector<cv::Point> &a);
 

@@ -35,6 +35,26 @@ bool detectNumber_digitdetector(TwoLayerNNFaster &nn, DigitDetector &detector, M
 	return true;
 }
 
+bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame, std::vector<NumberPosition> &result)
+{
+	result.clear();
+	vector<std::tuple<int, double, cv::Rect>> &&res = findLedDigitAreas(nn, detector, frame);
+	for (size_t i = 0; i < res.size(); ++i)
+	{
+		stringstream ss;
+		ss << std::get<0>(res[i]);
+		NumberPosition np;
+		ss >> np.number_;
+		np.boundRect = std::get<2>(res[i]);
+		np.position_ = (np.boundRect.tl() + np.boundRect.br()) / 2;
+
+		result.push_back(np);
+	}
+	std::sort(result.begin(), result.end(), SortByNumberUp);
+
+	return true;
+}
+
 void onMouse(int event, int x, int y, int, void *param)
 {
 	if (LBtnDown)
@@ -314,9 +334,9 @@ int main(int argc, char **argv)
 					}
 				}
 #if USE_DIGITDETECTOR
-				detectNumber_digitdetector(nn_print, detector, src, result);
+				detectNumber_digitdetector_LED(nn_print, detector, src, result);
 #else
-				detectNumber(src, tess, result);
+				detectNumber_LED(src, tess, result);
 #endif
 				bool checked = false;
 				bool ignored = false;

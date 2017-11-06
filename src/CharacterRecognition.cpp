@@ -1,8 +1,8 @@
 #include "CharacterRecognition.h"
-#include <valarray>
-#include <omp.h>
-#include "trace.h"
 #include "imageTrans.h"
+#include "trace.h"
+#include <omp.h>
+#include <valarray>
 
 using namespace std;
 using namespace cv;
@@ -653,6 +653,88 @@ void detectNumber(cv::Mat &src, tesseract::TessBaseAPI &tess,
 	tm.stop();
 	cout << "detect num: " << tm.getTimeMilli() << " ms" << endl;
 #endif
+}
+
+void detectNumber_LED(cv::Mat &src, tesseract::TessBaseAPI &tess, std::vector<NumberPosition> &result)
+{
+
+#if COUT_TIME
+	cv::TickMeter tm;
+	tm.reset();
+	tm.start();
+#endif
+	result.clear();
+	int g_nStructElementSize = 1;
+
+	Mat element = getStructuringElement(MORPH_RECT,
+										Size(2 * g_nStructElementSize + 1, 7 * g_nStructElementSize + 1),
+										Point(g_nStructElementSize, 3 * g_nStructElementSize));
+
+	Mat hsv;
+	Mat hsv_red;
+	Point moment_center(0, 0);
+	Rect moment_rect(80, 60, 160, 120);
+	Mat img_black;
+	Scalar redUpValue(0, 0, 200);
+
+	if (debug_screen == 1)
+	{
+		state_num = SD_CHECK_TARGET;
+	}
+	if ((debug_screen == 0) && (flag_LX_target == 0))
+	{
+		state_num = 0;
+	}
+
+	cv::cvtColor(src, hsv, CV_BGR2HSV);
+	inRange(hsv, Scalar(0, 0, 200), Scalar(255, 30, 255), hsv_red);
+	cv::Moments moments;
+	moments = cv::moments(hsv_red, true);
+	moment_center.x = moments.m10 / moments.m00;
+	moment_center.y = moments.m01 / moments.m00;
+
+	if (moment_rect.contains(moment_center))
+	{
+		morphologyEx(hsv_red, hsv_red, MORPH_CLOSE, element, Point(-1, -1),
+					 2);
+		cv::resize(hsv_red, hsv_red, Size(64, 48));
+		//cv::imshow("hsv_red", hsv_red);
+		tess.SetImage(hsv_red.data, hsv_red.cols, hsv_red.rows, 1,
+					  hsv_red.cols);
+	}
+	else
+	{
+		getRed(src, img_black, redUpValue);
+		morphologyEx(img_black, img_black, MORPH_CLOSE, element,
+					 Point(-1, -1), 2);
+		moments = cv::moments(img_black, true);
+		moment_center.x = moments.m10 / moments.m00;
+		moment_center.y = moments.m01 / moments.m00;
+		if (moment_rect.contains(moment_center))
+		{
+			resize(img_black, img_black, Size(64, 48));
+			tess.SetImage(img_black.data, img_black.cols, img_black.rows, 1,
+						  img_black.cols);
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	char *UTF8Text1 = tess.GetUTF8Text();
+
+	string tess_result_text1(UTF8Text1);
+
+	if (isNumberChar_checkScreen(tess_result_text1[0]))
+	{
+		cout << tess_result_text1[0] << endl;
+		NumberPosition np1;
+		np1.number_ = tess_result_text1[0];
+		np1.position_ = cv::Point(160, 40);
+		result.push_back(np1);
+	}
+	return;
 }
 
 bool isNumberChar(char &c)
