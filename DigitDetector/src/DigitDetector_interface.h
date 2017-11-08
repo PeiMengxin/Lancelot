@@ -11,3 +11,5 @@
 vector<std::tuple<int, double, cv::Rect>> findPrintDigitAreas(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame);
 
 vector<std::tuple<int, double, cv::Rect>> findLedDigitAreas(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame);
+
+vector<cv::Mat> findLedDigitAreasROI(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame);

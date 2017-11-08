@@ -35,20 +35,31 @@ bool detectNumber_digitdetector(TwoLayerNNFaster &nn, DigitDetector &detector, M
 	return true;
 }
 
+tesseract::TessBaseAPI tess_led;
+
 bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame, std::vector<NumberPosition> &result)
 {
 	result.clear();
-	vector<std::tuple<int, double, cv::Rect>> &&res = findLedDigitAreas(nn, detector, frame);
-	for (size_t i = 0; i < res.size(); ++i)
+	vector<cv::Mat> digit_rois = findLedDigitAreasROI(nn, detector, frame);
+	for (size_t i = 0; i < digit_rois.size(); ++i)
 	{
-		stringstream ss;
-		ss << std::get<0>(res[i]);
-		NumberPosition np;
-		ss >> np.number_;
-		np.boundRect = std::get<2>(res[i]);
-		np.position_ = (np.boundRect.tl() + np.boundRect.br()) / 2;
+		cv::Mat roi = digit_rois[i];
+		imshow("roi", roi);
+		// cv::waitKey(0);
+		resize(roi, roi, Size(64, 48));
+		tess_led.SetImage(roi.data, roi.cols, roi.rows, 1,
+						  roi.cols);
+		char *UTF8Text1 = tess_led.GetUTF8Text();
 
-		result.push_back(np);
+		string tess_result_text1(UTF8Text1);
+		if (isNumberChar_checkScreen(tess_result_text1[0]))
+		{
+			cout << tess_result_text1[0] << endl;
+			NumberPosition np1;
+			np1.number_ = tess_result_text1[0];
+			np1.position_ = cv::Point(160, 40);
+			result.push_back(np1);
+		}
 	}
 	std::sort(result.begin(), result.end(), SortByNumberUp);
 
@@ -99,6 +110,7 @@ NumberPosition number_position_send;
 vector<NumberPosition> target_global(6);
 
 #define USE_DIGITDETECTOR 0
+#define USE_DIGITDETECTOR_LED 1
 
 int main(int argc, char **argv)
 {
@@ -113,12 +125,14 @@ int main(int argc, char **argv)
 	tesseract::TessBaseAPI tess;
 	tess.Init(NULL, "eng");
 	tess.SetPageSegMode(tesseract::PageSegMode::PSM_SINGLE_CHAR);
+	tess_led.Init(NULL, "eng");
+	tess_led.SetPageSegMode(tesseract::PageSegMode::PSM_SINGLE_CHAR);
 
 	DigitDetector detector;
 	TwoLayerNNFaster nn_print(TEST);
 	TwoLayerNNFaster nn_led(TEST);
 	nn_print.loadParams((expand_user("~") + "/Lancelot/DigitDetector/params_hist_iter_12000.txt").c_str());
-	nn_led.loadParams((expand_user("~") + "/Lancelot/DigitDetector/params_hist_led.txt").c_str());
+	nn_led.loadParams((expand_user("~") + "/Lancelot/DigitDetector/nn_params_hist_iter_12000_180_no_box.txt").c_str());
 
 	VideoCapture cap;
 
@@ -333,8 +347,8 @@ int main(int argc, char **argv)
 						pre_check_count[i] = 0;
 					}
 				}
-#if USE_DIGITDETECTOR
-				detectNumber_digitdetector_LED(nn_print, detector, src, result);
+#if USE_DIGITDETECTOR_LED
+				detectNumber_digitdetector_LED(nn_led, detector, src, result);
 #else
 				detectNumber_LED(src, tess, result);
 #endif
