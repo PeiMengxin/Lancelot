@@ -40,7 +40,7 @@ tesseract::TessBaseAPI tess_led;
 bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame, std::vector<NumberPosition> &result)
 {
 	result.clear();
-	vector<cv::Mat> digit_rois = findLedDigitAreas(nn, detector, frame);
+	vector<cv::Mat> digit_rois = findLedDigitAreasROI(nn, detector, frame);
 	cv::Rect r(6, 8, 36, 48);
 	// cout << "-------" << endl;
 	for (size_t i = 0; i < digit_rois.size(); ++i)
