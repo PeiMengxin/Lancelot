@@ -47,9 +47,10 @@ bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detecto
 		cv::Mat roi = digit_rois[i];
 		imshow("roi", roi);
 		// cv::waitKey(0);
-		resize(roi, roi, Size(48, 36));
+		resize(roi, roi, Size(36, 48));
 		cv::Mat img(64, 48, CV_8UC1, Scalar(255));
 		roi.copyTo(img(r));
+		imshow("img", img);
 		tess_led.SetImage(img.data, img.cols, img.rows, 1,
 						  img.cols);
 		char *UTF8Text1 = tess_led.GetUTF8Text();

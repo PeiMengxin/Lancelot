@@ -174,7 +174,7 @@ vector<Rect> DigitDetector::getCandidateBndBoxes(Mat &binaryMap)
 			cvSeqRemove(pContour, 0);
 			continue;
 		}
-		if (bbox.width > bbox.height or 1.0 * bbox.height / bbox.width > 2)
+		if (bbox.width > bbox.height or 1.0 * bbox.height > 4 * bbox.width)
 		{
 			cvSeqRemove(pContour, 0);
 			continue;
