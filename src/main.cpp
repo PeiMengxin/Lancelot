@@ -41,14 +41,17 @@ bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detecto
 {
 	result.clear();
 	vector<cv::Mat> digit_rois = findLedDigitAreasROI(nn, detector, frame);
+	cv::Rect r(6, 8, 36, 48);
 	for (size_t i = 0; i < digit_rois.size(); ++i)
 	{
 		cv::Mat roi = digit_rois[i];
 		imshow("roi", roi);
 		// cv::waitKey(0);
-		resize(roi, roi, Size(64, 48));
-		tess_led.SetImage(roi.data, roi.cols, roi.rows, 1,
-						  roi.cols);
+		resize(roi, roi, Size(48, 36));
+		cv::Mat img(64, 48, CV_8UC1, Scalar(255));
+		roi.copyTo(img(r));
+		tess_led.SetImage(img.data, img.cols, img.rows, 1,
+						  img.cols);
 		char *UTF8Text1 = tess_led.GetUTF8Text();
 
 		string tess_result_text1(UTF8Text1);
