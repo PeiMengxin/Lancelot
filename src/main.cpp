@@ -40,31 +40,57 @@ tesseract::TessBaseAPI tess_led;
 bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detector, Mat &frame, std::vector<NumberPosition> &result)
 {
 	result.clear();
-	vector<cv::Mat> digit_rois = findLedDigitAreasROI(nn, detector, frame);
+	vector<cv::Mat> digit_rois = findLedDigitAreas(nn, detector, frame);
 	cv::Rect r(6, 8, 36, 48);
+	// cout << "-------" << endl;
 	for (size_t i = 0; i < digit_rois.size(); ++i)
 	{
 		cv::Mat roi = digit_rois[i];
-		imshow("roi", roi);
-		// cv::waitKey(0);
+		// cout << "roi.total:" << roi.total() << endl;
+		float rate = float((sum(roi) / 255).val[0]) / roi.total();
+		// cout << "rate:" << rate << endl;
+		if (roi.total() < 5000)
+		{
+			if (roi.total() > 2000)
+			{
+				if (rate < 0.4 || rate > 0.7)
+				{
+					continue;
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
+		else if (rate < 0.6 || rate > 0.8)
+		{
+			continue;
+		}
+		// imshow("roi", roi);
 		resize(roi, roi, Size(36, 48));
-		cv::Mat img(64, 48, CV_8UC1, Scalar(255));
+		cv::Mat img(64, 48, CV_8UC1, Scalar::all(255));
 		roi.copyTo(img(r));
-		imshow("img", img);
+		// imshow("img", img);
+
 		tess_led.SetImage(img.data, img.cols, img.rows, 1,
 						  img.cols);
 		char *UTF8Text1 = tess_led.GetUTF8Text();
 
 		string tess_result_text1(UTF8Text1);
+		// cout << tess_result_text1 << endl;
 		if (isNumberChar_checkScreen(tess_result_text1[0]))
 		{
-			cout << tess_result_text1[0] << endl;
+			// cout << tess_result_text1[0] << endl;
 			NumberPosition np1;
 			np1.number_ = tess_result_text1[0];
 			np1.position_ = cv::Point(160, 40);
 			result.push_back(np1);
 		}
+
+		// cv::waitKey(0);
 	}
+	// cout << "-------" << endl;
 	std::sort(result.begin(), result.end(), SortByNumberUp);
 
 	return true;

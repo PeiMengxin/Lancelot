@@ -755,6 +755,8 @@ bool isNumberChar_checkScreen(char &c)
 {
 	if (c == 'A')
 		c = '4';
+	if (c == 'o' || c == 'O')
+		c = '0';
 	if ((c >= '0') && (c <= '9'))
 	{
 		return true;
