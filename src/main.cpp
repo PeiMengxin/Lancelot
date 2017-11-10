@@ -63,7 +63,11 @@ bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detecto
 				continue;
 			}
 		}
-		else if (rate < 0.6 || rate > 0.8)
+		else if (toi.total() > 18000)
+		{
+			continue;
+		}
+		else if (rate < 0.5 || rate > 0.8)
 		{
 			continue;
 		}
