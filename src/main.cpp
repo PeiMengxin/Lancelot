@@ -63,7 +63,7 @@ bool detectNumber_digitdetector_LED(TwoLayerNNFaster &nn, DigitDetector &detecto
 				continue;
 			}
 		}
-		else if (toi.total() > 18000)
+		else if (roi.total() > 18000)
 		{
 			continue;
 		}
